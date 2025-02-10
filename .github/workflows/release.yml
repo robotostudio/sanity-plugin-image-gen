@@ -15,6 +15,18 @@ on:
           - minor
           - major
         default: 'patch'
+      release_type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - production
+          - prerelease
+        default: 'production'
+      dry_run:
+        description: 'Preview only'
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -30,7 +42,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -51,12 +62,28 @@ jobs:
           git config --global user.name "github-actions[bot]"
           echo "force(${{ github.event.inputs.version_type }})" > .release-commit
           git add .release-commit
-          git commit -m "force(${{ github.event.inputs.version_type }}): force ${{ github.event.inputs.version_type }} version release"
+          git commit -m "force(${{ github.event.inputs.version_type }}): force ${{ github.event.inputs.release_type }} release"
+
+      - name: Generate temp config
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo '{
+            "branches": [
+              "main",
+              {"name": "beta", "prerelease": true},
+              {
+                "name": "${{ github.ref_name }}",
+                "prerelease": ${{ github.event.inputs.release_type == 'prerelease' }}
+              }
+            ]
+          }' > .releaserc.temp.json
 
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         with:
           semantic_version: 23.0.2
+          dry_run: ${{ github.event.inputs.dry_run }}
+          extends: ${{ github.event_name == 'workflow_dispatch' && '.releaserc.temp.json' || '.releaserc.json' }}
           extra_plugins: |
             @semantic-release/changelog@6.0.3
             @semantic-release/git@10.0.1
@@ -64,4 +91,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          RELEASE_TYPE: ${{ github.event.inputs.version_type || '' }} 
+
+      - name: Display Preview Results
+        if: github.event.inputs.dry_run == 'true'
+        run: |
+          echo "::notice::This was a preview run - no actual release was published"
+          echo "::notice::Check the Semantic Release step output above to see what would be released" 

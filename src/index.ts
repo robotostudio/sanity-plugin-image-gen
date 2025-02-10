@@ -1,8 +1,6 @@
 import {definePlugin} from 'sanity'
 
-interface MyPluginConfig {
-  /* nothing here yet */
-}
+import {ImageAssetSource} from './components/image-asset-source'
 
 /**
  * Usage in `sanity.config.ts` (or .js)
@@ -17,10 +15,23 @@ interface MyPluginConfig {
  * })
  * ```
  */
-export const myPlugin = definePlugin<MyPluginConfig | void>((config = {}) => {
-  // eslint-disable-next-line no-console
-  console.log('hello from sanity-plugin-ai-image')
+export const aiImagePlugin = definePlugin(() => {
+  console.log('aiImagePlugin')
   return {
     name: 'sanity-plugin-ai-image',
+    form: {
+      image: {
+        assetSources: (prev) => {
+          return [
+            ...prev,
+            {
+              name: 'sanity-ai-image',
+              title: 'Generate Image',
+              component: ImageAssetSource,
+            },
+          ]
+        },
+      },
+    },
   }
 })

@@ -312,9 +312,11 @@ const LoadingStateContent = memo(function LoadingStateContent() {
 const ImageGridContent = memo(function ImageGridContent({
   images,
   onSelect,
+  prompt,
 }: {
   images: string[]
   onSelect?: (image: AssetFromSource[]) => void
+  prompt: string
 }) {
   const handleImageClick = useCallback(
     (image: string) => {
@@ -325,15 +327,15 @@ const ImageGridContent = memo(function ImageGridContent({
             value: image,
             assetDocumentProps: {
               _type: 'sanity.imageAsset',
-              description: 'Generated image',
-              creditLine: 'Generated image',
-              // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-            } as any,
-          },
+              description: prompt,
+              creditLine: 'Generated image by Sanity AI Image Plugin',
+              title: prompt,
+            },
+          } as unknown as AssetFromSource,
         ])
       }
     },
-    [onSelect],
+    [onSelect, prompt],
   )
 
   if (!images.length) {
@@ -374,7 +376,7 @@ const ImageGridContent = memo(function ImageGridContent({
           >
             <img
               src={`data:image/png;base64,${image}`}
-              alt={`Generated ${index.toString() + 1}`}
+              alt={`${prompt} index ${index.toString() + 1}`}
               loading="lazy"
               style={{width: '100%', height: '100%', display: 'block'}}
             />
@@ -561,11 +563,11 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
         {isLoading ? (
           <LoadingStateContent />
         ) : (
-          <ImageGridContent images={images} onSelect={onSelect} />
+          <ImageGridContent images={images} onSelect={onSelect} prompt={query} />
         )}
       </StyledComponents.ContentContainer>
     )
-  }, [isLoading, images, onSelect])
+  }, [isLoading, images, onSelect, query])
 
   return (
     <ThemeProvider>

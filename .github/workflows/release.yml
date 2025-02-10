@@ -44,6 +44,15 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Create version commit
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          echo "force-${{ github.event.inputs.version_type }}" > .release-commit
+          git add .release-commit
+          git commit -m "force(${{ github.event.inputs.version_type }}): trigger ${{ github.event.inputs.version_type }} release"
+
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         with:

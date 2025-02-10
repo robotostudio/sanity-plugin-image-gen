@@ -10,7 +10,11 @@
     [
       "@semantic-release/commit-analyzer",
       {
-        "releaseRules": [{"type": "force", "release": "${process.env.RELEASE_TYPE || 'patch'}"}]
+        "releaseRules": [
+          {"type": "force-major", "release": "major"},
+          {"type": "force-minor", "release": "minor"},
+          {"type": "force-patch", "release": "patch"}
+        ]
       }
     ],
     "@semantic-release/release-notes-generator",

@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.1.1...v1.2.0) (2025-02-10)
+
+
+### Features
+
+* Add dry run option for release workflow ([0b6356b](https://github.com/robotostudio/sanity-plugin-image-gen/commit/0b6356b1ab856358d431c0aaac2dd08889dfdcc3))
+
 ## [1.1.1](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.1.0...v1.1.1) (2025-02-10)
 
 # [1.1.0](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.0.0...v1.1.0) (2025-02-10)

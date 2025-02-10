@@ -65,14 +65,7 @@
     "react-dom": "^19.0.0",
     "sanity": "^3.74.1",
     "styled-components": "^6.1.15",
-    "typescript": "^5.7.3",
-    "@semantic-release/changelog": "^6.0.3",
-    "@semantic-release/commit-analyzer": "^11.1.0",
-    "@semantic-release/git": "^10.0.1",
-    "@semantic-release/github": "^9.2.6",
-    "@semantic-release/npm": "^11.0.2",
-    "@semantic-release/release-notes-generator": "^12.1.0",
-    "semantic-release": "^23.0.2"
+    "typescript": "^5.7.3"
   },
   "peerDependencies": {
     "react": "^18",
@@ -80,31 +73,5 @@
   },
   "engines": {
     "node": ">=18"
-  },
-  "release": {
-    "branches": [
-      "main",
-      {
-        "name": "beta",
-        "prerelease": true
-      }
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      "@semantic-release/release-notes-generator",
-      "@semantic-release/changelog",
-      "@semantic-release/npm",
-      "@semantic-release/github",
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "package.json",
-            "CHANGELOG.md"
-          ],
-          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-        }
-      ]
-    ]
   }
 }

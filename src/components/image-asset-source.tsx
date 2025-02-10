@@ -1,5 +1,6 @@
-import {ArrowRightIcon, SearchIcon} from '@sanity/icons'
+import {ChevronDownIcon, SearchIcon} from '@sanity/icons'
 import {
+  Box,
   Button,
   Card,
   Dialog,
@@ -88,7 +89,7 @@ const StyledComponents = {
 
   ButtonWrapper: styled.div`
     width: 30%;
-    padding-left: 0.5rem;
+    // padding-left: 0.5rem;
   `,
 
   OptionsContainer: styled(Stack)`
@@ -134,17 +135,26 @@ const StyledComponents = {
     width: 100%;
     padding: 1rem 0;
   `,
+  DialogContent: styled(Stack)`
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  `,
+
   ContentContainer: styled(Card)`
-    min-height: 300px;
-    width: 100%;
+    flex: 1;
+    min-height: 0; /* Critical for nested flex scroll */
     background-color: var(--card-bg-color);
     border: 1px solid var(--card-border-color);
     border-radius: 4px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   `,
 
   EmptyState: styled(Flex)`
-    height: 300px;
+    flex: 1;
+    min-height: 300px;
     width: 100%;
     align-items: center;
     justify-content: center;
@@ -154,7 +164,8 @@ const StyledComponents = {
   `,
 
   LoadingState: styled(Flex)`
-    height: 300px;
+    flex: 1;
+    min-height: 300px;
     width: 100%;
     align-items: center;
     justify-content: center;
@@ -162,21 +173,72 @@ const StyledComponents = {
     gap: 1rem;
   `,
 
+  GridWrapper: styled(Flex)`
+    flex: 1;
+    min-height: 0; /* Critical for nested flex scroll */
+    width: 100%;
+    overflow: hidden;
+  `,
+
   ImageGrid: styled(Grid)`
     padding: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
     width: 100%;
+    height: 100%;
+    overflow-y: scroll; /* Changed from auto to ensure scrolling */
+    overflow-x: hidden;
+
+    /* Maintain grid alignment */
+    align-items: start;
+    align-content: start;
+
+    /* Ensure grid takes full height */
+    min-height: min-content;
+
+    /* Custom scrollbar styling */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+      margin: 0.5rem;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--card-border-color);
+      border-radius: 3px;
+
+      &:hover {
+        background: var(--card-shadow-color);
+      }
+    }
+
+    /* Firefox scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: var(--card-border-color) transparent;
+
+    @media (max-width: 480px) {
+      grid-template-columns: minmax(0, 1fr);
+    }
   `,
 
   ImageCard: styled(Card)`
+    width: 100%;
     aspect-ratio: 1;
     overflow: hidden;
-    transition: transform 0.2s ease-in-out;
+    transition:
+      transform 0.2s ease-in-out,
+      box-shadow 0.2s ease-in-out;
     cursor: pointer;
+    background-color: var(--card-code-bg-color);
+    padding: 0.75rem;
+    border: 1px solid var(--card-border-color);
 
     &:hover {
-      transform: scale(1.02);
+      transform: translateY(-2px);
+      box-shadow: var(--card-shadow-umbra-color) 0px 4px 8px;
     }
   `,
 
@@ -186,6 +248,9 @@ const StyledComponents = {
     height: 100%;
     align-items: center;
     justify-content: center;
+    border-radius: 2px;
+    overflow: hidden;
+    background-color: var(--card-bg-color);
   `,
 
   StyledImage: styled.img`
@@ -193,6 +258,39 @@ const StyledComponents = {
     height: 100%;
     object-fit: cover;
     border-radius: 3px;
+  `,
+
+  CollapsibleHeader: styled(Button)`
+    width: 100%;
+    padding: 0.75rem 0;
+    border: none;
+    background: none;
+    border-top: 1px solid var(--card-border-color);
+    margin-top: 1rem;
+
+    &:hover {
+      background: none;
+      opacity: 0.8;
+    }
+  `,
+
+  HeaderContent: styled(Flex)`
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+  `,
+
+  ChevronIcon: styled(ChevronDownIcon)<{$isOpen: boolean}>`
+    transform: rotate(${({$isOpen}) => ($isOpen ? '180deg' : '0deg')});
+    transition: transform 0.2s ease;
+  `,
+
+  CollapsibleContent: styled(Box)<{$isOpen: boolean}>`
+    padding: ${({$isOpen}) => ($isOpen ? '1rem 0' : '0')};
+    height: ${({$isOpen}) => ($isOpen ? 'auto' : '0')};
+    overflow: hidden;
+    opacity: ${({$isOpen}) => ($isOpen ? '1' : '0')};
+    transition: all 0.2s ease-in-out;
   `,
 }
 
@@ -242,25 +340,121 @@ const ImageGridContent = memo(function ImageGridContent({
   }
 
   return (
-    <StyledComponents.ImageGrid>
-      {images.map((image, index) => (
-        <StyledComponents.ImageCard
-          key={`${index.toString()}-${image}`}
-          padding={2}
-          radius={2}
-          shadow={1}
-          onClick={() => handleImageClick(image)}
-        >
-          <StyledComponents.ImageWrapper>
-            <StyledComponents.StyledImage
-              src={`data:image/png;base64,${image}`}
-              alt={`Generated image ${index + 1}`}
-              loading="lazy"
+    <StyledComponents.GridWrapper>
+      <StyledComponents.ImageGrid>
+        {images.map((image, index) => (
+          <StyledComponents.ImageCard
+            key={`${index.toString()}-${image}`}
+            radius={2}
+            shadow={1}
+            onClick={() => handleImageClick(image)}
+          >
+            <StyledComponents.ImageWrapper>
+              <StyledComponents.StyledImage
+                src={`data:image/png;base64,${image}`}
+                alt={`Generated image ${index + 1}`}
+                loading="lazy"
+              />
+            </StyledComponents.ImageWrapper>
+          </StyledComponents.ImageCard>
+        ))}
+      </StyledComponents.ImageGrid>
+    </StyledComponents.GridWrapper>
+  )
+})
+
+// Add this component for the options accordion
+const GenerationOptionsAccordion = memo(function GenerationOptionsAccordion({
+  options,
+  onOptionChange,
+  isLoading,
+}: {
+  options: ImageGenerationOptions
+  onOptionChange: <K extends keyof ImageGenerationOptions>(
+    key: K,
+    value: ImageGenerationOptions[K],
+  ) => void
+  isLoading: boolean
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <Stack space={4}>
+      <StyledComponents.CollapsibleHeader onClick={() => setIsOpen(!isOpen)} mode="ghost">
+        <StyledComponents.HeaderContent>
+          <Text weight="semibold" size={1}>
+            Advanced Options
+          </Text>
+          <StyledComponents.ChevronIcon $isOpen={isOpen} />
+        </StyledComponents.HeaderContent>
+      </StyledComponents.CollapsibleHeader>
+
+      <StyledComponents.CollapsibleContent $isOpen={isOpen}>
+        <StyledComponents.OptionGrid>
+          <Stack space={3}>
+            <Label size={1}>Aspect Ratio</Label>
+            <Select
+              value={options.aspectRatio}
+              onChange={(e) =>
+                onOptionChange(
+                  'aspectRatio',
+                  e.currentTarget.value as ImageGenerationOptions['aspectRatio'],
+                )
+              }
+              disabled={isLoading}
+            >
+              {ASPECT_RATIOS.map((ratio) => (
+                <option key={ratio.value} value={ratio.value}>
+                  {ratio.label}
+                </option>
+              ))}
+            </Select>
+          </Stack>
+
+          <Stack space={3}>
+            <Label size={1}>Number of Images</Label>
+            <Select
+              value={options.numberOfImages}
+              onChange={(e) =>
+                onOptionChange(
+                  'numberOfImages',
+                  Number(e.currentTarget.value) as ImageGenerationOptions['numberOfImages'],
+                )
+              }
+              disabled={isLoading}
+            >
+              {IMAGE_COUNT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </Select>
+          </Stack>
+
+          <Stack space={3}>
+            <Label size={1}>Negative Prompt</Label>
+            <TextInput
+              value={options.negativePrompt}
+              onChange={(e) => onOptionChange('negativePrompt', e.currentTarget.value)}
+              placeholder="Elements to avoid in the image"
+              disabled={isLoading}
             />
-          </StyledComponents.ImageWrapper>
-        </StyledComponents.ImageCard>
-      ))}
-    </StyledComponents.ImageGrid>
+          </Stack>
+
+          <Stack space={3}>
+            <div style={{padding: '0.5rem 0'}} />
+            <StyledComponents.OptionWrapper>
+              <Switch
+                checked={options.enhancePrompt}
+                onChange={(e) => onOptionChange('enhancePrompt', e.currentTarget.checked)}
+                disabled={isLoading}
+              />
+              <Label size={1}>Enhance prompt quality</Label>
+            </StyledComponents.OptionWrapper>
+          </Stack>
+        </StyledComponents.OptionGrid>
+      </StyledComponents.CollapsibleContent>
+    </Stack>
   )
 })
 
@@ -326,78 +520,16 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
     }
   }, [query, options])
 
-  // Render helpers
-  const renderGenerationOptions = () => (
-    <StyledComponents.OptionsContainer space={4}>
-      <Text weight="semibold" size={1}>
-        Generation Options
-      </Text>
-
-      <StyledComponents.OptionGrid>
-        <Stack space={3}>
-          <Label size={1}>Aspect Ratio</Label>
-          <Select
-            value={options.aspectRatio}
-            onChange={(e) =>
-              handleOptionChange(
-                'aspectRatio',
-                e.currentTarget.value as ImageGenerationOptions['aspectRatio'],
-              )
-            }
-            disabled={isLoading}
-          >
-            {ASPECT_RATIOS.map((ratio) => (
-              <option key={ratio.value} value={ratio.value}>
-                {ratio.label}
-              </option>
-            ))}
-          </Select>
-        </Stack>
-
-        <Stack space={3}>
-          <Label size={1}>Number of Images</Label>
-          <Select
-            value={options.numberOfImages}
-            onChange={(e) =>
-              handleOptionChange(
-                'numberOfImages',
-                Number(e.currentTarget.value) as ImageGenerationOptions['numberOfImages'],
-              )
-            }
-            disabled={isLoading}
-          >
-            {IMAGE_COUNT_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
-        </Stack>
-
-        <Stack space={3}>
-          <Label size={1}>Negative Prompt</Label>
-          <TextInput
-            value={options.negativePrompt}
-            onChange={(e) => handleOptionChange('negativePrompt', e.currentTarget.value)}
-            placeholder="Elements to avoid in the image"
-            disabled={isLoading}
-          />
-        </Stack>
-
-        <Stack space={3}>
-          <div style={{padding: '0.5rem 0'}} />
-          <StyledComponents.OptionWrapper>
-            <Switch
-              checked={options.enhancePrompt}
-              onChange={(e) => handleOptionChange('enhancePrompt', e.currentTarget.checked)}
-              disabled={isLoading}
-            />
-            <Label size={1}>Enhance prompt quality</Label>
-          </StyledComponents.OptionWrapper>
-        </Stack>
-      </StyledComponents.OptionGrid>
-    </StyledComponents.OptionsContainer>
-  )
+  // Replace renderGenerationOptions with this
+  const renderGenerationOptions = useCallback(() => {
+    return (
+      <GenerationOptionsAccordion
+        options={options}
+        onOptionChange={handleOptionChange}
+        isLoading={isLoading}
+      />
+    )
+  }, [options, handleOptionChange, isLoading])
 
   const renderContent = useCallback(() => {
     return (
@@ -419,10 +551,9 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
         header="Generate image with AI"
         onClose={onClose}
         open
-        width={4}
-        padding={4}
+        width={3}
       >
-        <Stack space={4} paddingX={4} paddingBottom={4}>
+        <StyledComponents.DialogContent padding={4}>
           <StyledComponents.SearchInputContainer>
             <StyledComponents.InputWrapper>
               <StyledComponents.SearchInput
@@ -439,15 +570,11 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
               <Button
                 textAlign="center"
                 onClick={generateImage}
+                text={isLoading ? 'Generating...' : 'Generate'}
                 style={{width: '100%'}}
                 disabled={isLoading}
                 tone={error ? 'critical' : 'default'}
-              >
-                <StyledComponents.GenerateButtonContent>
-                  {isLoading ? <Spinner /> : <ArrowRightIcon />}
-                  <Text size={2}>{isLoading ? 'Generating...' : 'Generate'}</Text>
-                </StyledComponents.GenerateButtonContent>
-              </Button>
+              />
             </StyledComponents.ButtonWrapper>
           </StyledComponents.SearchInputContainer>
 
@@ -460,7 +587,7 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
           )}
 
           {renderContent()}
-        </Stack>
+        </StyledComponents.DialogContent>
       </Dialog>
     </ThemeProvider>
   )

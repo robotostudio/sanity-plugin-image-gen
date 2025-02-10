@@ -25,12 +25,12 @@ Add the plugin to your Sanity Studio configuration:
 
 ```ts
 import { defineConfig } from 'sanity'
-import { imageGenPlugin } from 'sanity-plugin-image-gen'
+import { imageGen } from 'sanity-plugin-image-gen'
 
 export default defineConfig({
   // ...
   plugins: [
-    imageGenPlugin({
+    imageGen({
       apiEndpoint: '/api/generate-image',
     })
   ],

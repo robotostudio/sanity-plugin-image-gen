@@ -35,11 +35,20 @@ const IMAGE_COUNT_OPTIONS = [
   {value: 4, label: '4 Images'},
 ] as const
 
+// Add size options constant after ASPECT_RATIOS
+const SIZE_OPTIONS = [
+  {value: '512x512', label: 'Small (512x512)'},
+  {value: '768x768', label: 'Medium (768x768)'},
+  {value: '1024x1024', label: 'Large (1024x1024)'},
+  {value: '1536x1536', label: 'Extra Large (1536x1536)'},
+] as const
+
 interface ImageGenerationOptions {
   aspectRatio: '1:1' | '16:9' | '4:3' | '3:2'
   numberOfImages: 1 | 2 | 3 | 4
   negativePrompt: string
   enhancePrompt: boolean
+  size: '512x512' | '768x768' | '1024x1024' | '1536x1536'
 }
 
 const DEFAULT_OPTIONS: ImageGenerationOptions = {
@@ -47,6 +56,7 @@ const DEFAULT_OPTIONS: ImageGenerationOptions = {
   numberOfImages: 1,
   negativePrompt: '',
   enhancePrompt: true,
+  size: '512x512',
 }
 
 const API_ENDPOINT = 'http://localhost:3000/api/ai-image'
@@ -436,6 +446,23 @@ const GenerationOptionsAccordion = memo(function GenerationOptionsAccordion({
           </Stack>
 
           <Stack space={3}>
+            <Label size={1}>Image Size</Label>
+            <Select
+              value={options.size}
+              onChange={(e) =>
+                onOptionChange('size', e.currentTarget.value as ImageGenerationOptions['size'])
+              }
+              disabled={isLoading}
+            >
+              {SIZE_OPTIONS.map((size) => (
+                <option key={size.value} value={size.value}>
+                  {size.label}
+                </option>
+              ))}
+            </Select>
+          </Stack>
+
+          <Stack space={3}>
             <Label size={1}>Number of Images</Label>
             <Select
               value={options.numberOfImages}
@@ -465,17 +492,14 @@ const GenerationOptionsAccordion = memo(function GenerationOptionsAccordion({
             />
           </Stack>
 
-          <Stack space={3}>
-            <div style={{padding: '0.5rem 0'}} />
-            <StyledComponents.OptionWrapper>
-              <Switch
-                checked={options.enhancePrompt}
-                onChange={(e) => onOptionChange('enhancePrompt', e.currentTarget.checked)}
-                disabled={isLoading}
-              />
-              <Label size={1}>Enhance prompt quality</Label>
-            </StyledComponents.OptionWrapper>
-          </Stack>
+          <StyledComponents.OptionWrapper>
+            <Switch
+              checked={options.enhancePrompt}
+              onChange={(e) => onOptionChange('enhancePrompt', e.currentTarget.checked)}
+              disabled={isLoading}
+            />
+            <Label size={1}>Enhance prompt quality</Label>
+          </StyledComponents.OptionWrapper>
         </StyledComponents.OptionGrid>
       </StyledComponents.CollapsibleContent>
     </Stack>
@@ -527,6 +551,7 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
             : query,
           aspectRatio: options.aspectRatio,
           numberOfImages: options.numberOfImages,
+          size: options.size,
           ...(options.negativePrompt && {
             negativePrompt: options.negativePrompt,
           }),

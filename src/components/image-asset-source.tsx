@@ -61,6 +61,22 @@ const OptionWrapper = styled(Flex)`
   gap: 0.5rem;
 `
 
+const LoadingContainer = styled(Flex)`
+  width: 100%;
+  height: 200px;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--card-bg-color);
+  border-radius: 4px;
+`
+
+const GenerateButtonContent = styled(Flex)`
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+`
+
 type ImageAssetSourceProps = {
   onClose: () => void
   //   onGenerate: () => void
@@ -205,12 +221,15 @@ export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
               <Button
                 textAlign="center"
                 onClick={handleGenerate}
-                text={isLoading ? 'Generating...' : 'Generate'}
                 style={{width: '100%'}}
-                icon={isLoading ? Spinner : ArrowRightIcon}
                 disabled={isLoading}
                 tone={error ? 'critical' : 'default'}
-              />
+              >
+                <GenerateButtonContent>
+                  {isLoading ? <Spinner /> : <ArrowRightIcon />}
+                  <Text size={2}>{isLoading ? 'Generating...' : 'Generate'}</Text>
+                </GenerateButtonContent>
+              </Button>
             </ButtonWrapper>
           </SearchInputContainer>
 
@@ -290,7 +309,16 @@ export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
             </Text>
           )}
 
-          {images.length > 0 ? (
+          {isLoading ? (
+            <LoadingContainer>
+              <Stack space={3} align="center">
+                <Spinner />
+                <Text size={1} muted>
+                  Generating your images...
+                </Text>
+              </Stack>
+            </LoadingContainer>
+          ) : images.length > 0 ? (
             <ImageContainer>
               {images.map((image, index) => (
                 <Card key={`${index.toString()}-${image}`} padding={2}>
@@ -303,7 +331,7 @@ export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
             </ImageContainer>
           ) : (
             <Text size={1} muted>
-              {isLoading ? 'Generating image...' : 'No images generated yet'}
+              No images generated yet
             </Text>
           )}
         </Stack>

@@ -362,7 +362,7 @@ const ImageGridContent = memo(function ImageGridContent({
         padding={4}
         style={{maxHeight: '40dvh', overflow: 'auto'}}
       >
-        {[...images, ...images, ...images, ...images, ...images, ...images].map((image, index) => (
+        {images.map((image, index) => (
           <div
             key={`${index.toString()}-${image}`}
             onClick={() => handleImageClick(`data:image/png;base64,${image}`)}

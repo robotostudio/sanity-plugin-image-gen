@@ -15,6 +15,11 @@ on:
           - minor
           - major
         default: 'patch'
+      dry_run:
+        description: 'Dry run (no actual release)'
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -57,6 +62,7 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         with:
           semantic_version: 23.0.2
+          dry_run: ${{ github.event.inputs.dry_run == 'true' }}
           extra_plugins: |
             @semantic-release/changelog@6.0.3
             @semantic-release/git@10.0.1

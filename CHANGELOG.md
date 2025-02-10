@@ -1,3 +1,5 @@
+## [1.1.1](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.1.0...v1.1.1) (2025-02-10)
+
 # [1.1.0](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.0.0...v1.1.0) (2025-02-10)
 
 

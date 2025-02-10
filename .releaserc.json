@@ -10,11 +10,17 @@
     [
       "@semantic-release/commit-analyzer",
       {
+        "preset": "conventionalcommits",
         "releaseRules": [
-          {"type": "force-major", "release": "major"},
-          {"type": "force-minor", "release": "minor"},
-          {"type": "force-patch", "release": "patch"}
-        ]
+          {"type": "force", "scope": "major", "release": "major"},
+          {"type": "force", "scope": "minor", "release": "minor"},
+          {"type": "force", "scope": "patch", "release": "patch"},
+          {"type": "feat", "release": "minor"},
+          {"type": "fix", "release": "patch"}
+        ],
+        "parserOpts": {
+          "noteKeywords": ["BREAKING CHANGE", "BREAKING CHANGES"]
+        }
       }
     ],
     "@semantic-release/release-notes-generator",

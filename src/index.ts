@@ -1,6 +1,7 @@
 import {definePlugin} from 'sanity'
 
 import {ImageAssetSource} from './components/image-asset-source'
+import {SparklesIcon} from '@sanity/icons'
 
 /**
  * Usage in `sanity.config.ts` (or .js)
@@ -27,6 +28,7 @@ export const aiImagePlugin = definePlugin(() => {
             {
               name: 'sanity-ai-image',
               title: 'Generate Image',
+              icon: SparklesIcon,
               component: ImageAssetSource,
             },
           ]

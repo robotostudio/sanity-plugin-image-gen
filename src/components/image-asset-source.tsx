@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {ChevronDownIcon, SearchIcon} from '@sanity/icons'
 import {
   Box,
@@ -16,6 +17,7 @@ import {
   ThemeProvider,
 } from '@sanity/ui'
 import {type ChangeEvent, memo, useCallback, useState} from 'react'
+import type {AssetFromSource} from 'sanity'
 import styled from 'styled-components'
 
 // Constants
@@ -63,7 +65,7 @@ interface GenerateImageResponse {
 
 interface ImageAssetSourceProps {
   onClose: () => void
-  onSelect?: (image: string) => void
+  onSelect?: (image: AssetFromSource[]) => void
 }
 
 // Styled Components
@@ -122,7 +124,7 @@ const StyledComponents = {
   `,
 
   GenerateButtonContent: styled(Flex)`
-    align-items: center;
+    align-items: center
     justify-content: center;
     gap: 0.5rem;
     width: 100%;
@@ -312,12 +314,23 @@ const ImageGridContent = memo(function ImageGridContent({
   onSelect,
 }: {
   images: string[]
-  onSelect?: (image: string) => void
+  onSelect?: (image: AssetFromSource[]) => void
 }) {
   const handleImageClick = useCallback(
     (image: string) => {
       if (onSelect) {
-        onSelect(image)
+        onSelect([
+          {
+            kind: 'base64',
+            value: image,
+            assetDocumentProps: {
+              _type: 'sanity.imageAsset',
+              description: 'Generated image',
+              creditLine: 'Generated image',
+              // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+            } as any,
+          },
+        ])
       }
     },
     [onSelect],
@@ -341,24 +354,33 @@ const ImageGridContent = memo(function ImageGridContent({
 
   return (
     <StyledComponents.GridWrapper>
-      <StyledComponents.ImageGrid>
-        {images.map((image, index) => (
-          <StyledComponents.ImageCard
+      <Grid
+        columns={[1, 2]}
+        gap={[1, 1, 2, 3]}
+        padding={4}
+        style={{maxHeight: '40dvh', overflow: 'auto'}}
+      >
+        {[...images, ...images, ...images, ...images, ...images, ...images].map((image, index) => (
+          <div
             key={`${index.toString()}-${image}`}
-            radius={2}
-            shadow={1}
-            onClick={() => handleImageClick(image)}
+            onClick={() => handleImageClick(`data:image/png;base64,${image}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleImageClick(`data:image/png;base64,${image}`)
+              }
+            }}
+            role="button"
+            tabIndex={0}
           >
-            <StyledComponents.ImageWrapper>
-              <StyledComponents.StyledImage
-                src={`data:image/png;base64,${image}`}
-                alt={`Generated image ${index + 1}`}
-                loading="lazy"
-              />
-            </StyledComponents.ImageWrapper>
-          </StyledComponents.ImageCard>
+            <img
+              src={`data:image/png;base64,${image}`}
+              alt={`Generated ${index.toString() + 1}`}
+              loading="lazy"
+              style={{width: '100%', height: '100%', display: 'block'}}
+            />
+          </div>
         ))}
-      </StyledComponents.ImageGrid>
+      </Grid>
     </StyledComponents.GridWrapper>
   )
 })
@@ -503,7 +525,9 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
             : query,
           aspectRatio: options.aspectRatio,
           numberOfImages: options.numberOfImages,
-          ...(options.negativePrompt && {negativePrompt: options.negativePrompt}),
+          ...(options.negativePrompt && {
+            negativePrompt: options.negativePrompt,
+          }),
         }),
       })
 

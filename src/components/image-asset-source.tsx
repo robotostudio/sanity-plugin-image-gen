@@ -89,7 +89,7 @@ const StyledComponents = {
 
   SearchInputContainer: styled(Flex)`
     display: flex;
-    gap: 1rem;
+    gap: 0.75rem;
     width: 100%;
     padding: 1rem 0;
   `,
@@ -274,7 +274,7 @@ const StyledComponents = {
 
   CollapsibleHeader: styled(Button)`
     width: 100%;
-    padding: 0.75rem 0;
+    padding: 0.5rem 0;
     border: none;
     background: none;
     border-top: 1px solid var(--card-border-color);

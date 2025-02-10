@@ -14,106 +14,10 @@ import {
   TextInput,
   ThemeProvider,
 } from '@sanity/ui'
-import {type ChangeEvent, useState} from 'react'
+import {type ChangeEvent, memo, useCallback, useState} from 'react'
 import styled from 'styled-components'
 
-export const SearchInput = styled(TextInput)`
-  position: sticky;
-  flex: 1;
-  top: 0;
-  z-index: 1;
-`
-
-const SearchInputContainer = styled(Flex)`
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-  padding: 1rem 0;
-`
-
-const InputWrapper = styled.div`
-  width: 70%;
-  padding-right: 0.5rem;
-`
-
-const ButtonWrapper = styled.div`
-  width: 30%;
-  padding-left: 0.5rem;
-`
-
-const OptionsContainer = styled(Stack)`
-  border-top: 1px solid var(--card-border-color);
-  margin-top: 1rem;
-  padding-top: 1rem;
-`
-
-const OptionGrid = styled(Grid)`
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
-  }
-`
-
-const OptionWrapper = styled(Flex)`
-  align-items: center;
-  gap: 0.5rem;
-`
-
-const LoadingContainer = styled(Flex)`
-  width: 100%;
-  height: 200px;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--card-bg-color);
-  border-radius: 4px;
-`
-
-const GenerateButtonContent = styled(Flex)`
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-`
-
-type ImageAssetSourceProps = {
-  onClose: () => void
-  //   onGenerate: () => void
-  //   onSelect: (image: any) => void
-}
-
-interface GenerateImageResponse {
-  images: string[]
-  metadata: {
-    prompt: string
-    aspectRatio: string
-    model: string
-    generatedAt: string
-  }
-}
-
-const ImageContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1rem;
-  width: 100%;
-  padding: 1rem 0;
-`
-
-const StyledImage = styled.img`
-  width: 100%;
-  height: auto;
-  border-radius: 4px;
-`
-
-interface ImageGenerationOptions {
-  aspectRatio: '1:1' | '16:9' | '4:3' | '3:2'
-  numberOfImages: 1 | 2 | 3 | 4
-  negativePrompt: string
-  enhancePrompt: boolean
-}
-
+// Constants
 const ASPECT_RATIOS = [
   {value: '1:1', label: 'Square (1:1)'},
   {value: '16:9', label: 'Landscape (16:9)'},
@@ -128,34 +32,263 @@ const IMAGE_COUNT_OPTIONS = [
   {value: 4, label: '4 Images'},
 ] as const
 
-export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
+interface ImageGenerationOptions {
+  aspectRatio: '1:1' | '16:9' | '4:3' | '3:2'
+  numberOfImages: 1 | 2 | 3 | 4
+  negativePrompt: string
+  enhancePrompt: boolean
+}
+
+const DEFAULT_OPTIONS: ImageGenerationOptions = {
+  aspectRatio: '1:1',
+  numberOfImages: 1,
+  negativePrompt: '',
+  enhancePrompt: true,
+}
+
+const API_ENDPOINT = 'http://localhost:3000/api/ai-image'
+
+// Types
+
+interface GenerateImageResponse {
+  images: string[]
+  metadata: {
+    prompt: string
+    aspectRatio: string
+    model: string
+    generatedAt: string
+  }
+}
+
+interface ImageAssetSourceProps {
+  onClose: () => void
+  onSelect?: (image: string) => void
+}
+
+// Styled Components
+const StyledComponents = {
+  SearchInput: styled(TextInput)`
+    position: sticky;
+    flex: 1;
+    top: 0;
+    z-index: 1;
+  `,
+
+  SearchInputContainer: styled(Flex)`
+    display: flex;
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 0;
+  `,
+
+  InputWrapper: styled.div`
+    width: 70%;
+    padding-right: 0.5rem;
+  `,
+
+  ButtonWrapper: styled.div`
+    width: 30%;
+    padding-left: 0.5rem;
+  `,
+
+  OptionsContainer: styled(Stack)`
+    border-top: 1px solid var(--card-border-color);
+    margin-top: 1rem;
+    padding-top: 1rem;
+  `,
+
+  OptionGrid: styled(Grid)`
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  `,
+
+  OptionWrapper: styled(Flex)`
+    align-items: center;
+    gap: 0.5rem;
+  `,
+
+  LoadingContainer: styled(Flex)`
+    width: 100%;
+    height: 200px;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--card-bg-color);
+    border-radius: 4px;
+  `,
+
+  GenerateButtonContent: styled(Flex)`
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  `,
+
+  ImageContainer: styled.div`
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    width: 100%;
+    padding: 1rem 0;
+  `,
+  ContentContainer: styled(Card)`
+    min-height: 300px;
+    width: 100%;
+    background-color: var(--card-bg-color);
+    border: 1px solid var(--card-border-color);
+    border-radius: 4px;
+    overflow: hidden;
+  `,
+
+  EmptyState: styled(Flex)`
+    height: 300px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    color: var(--card-muted-fg-color);
+  `,
+
+  LoadingState: styled(Flex)`
+    height: 300px;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  `,
+
+  ImageGrid: styled(Grid)`
+    padding: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    width: 100%;
+  `,
+
+  ImageCard: styled(Card)`
+    aspect-ratio: 1;
+    overflow: hidden;
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+  `,
+
+  ImageWrapper: styled(Flex)`
+    position: relative;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  `,
+
+  StyledImage: styled.img`
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 3px;
+  `,
+}
+
+// Add this component for the loading state
+const LoadingStateContent = memo(function LoadingStateContent() {
+  return (
+    <StyledComponents.LoadingState>
+      <Spinner />
+      <Text size={1} muted>
+        Generating your images...
+      </Text>
+    </StyledComponents.LoadingState>
+  )
+})
+
+// Add this component for the image grid
+const ImageGridContent = memo(function ImageGridContent({
+  images,
+  onSelect,
+}: {
+  images: string[]
+  onSelect?: (image: string) => void
+}) {
+  const handleImageClick = useCallback(
+    (image: string) => {
+      if (onSelect) {
+        onSelect(image)
+      }
+    },
+    [onSelect],
+  )
+
+  if (!images.length) {
+    return (
+      <StyledComponents.EmptyState>
+        <SearchIcon style={{width: 32, height: 32, opacity: 0.5}} />
+        <Stack space={2}>
+          <Text align="center" size={2} weight="semibold">
+            No images generated
+          </Text>
+          <Text align="center" size={1} muted>
+            Enter a prompt and click generate to create images
+          </Text>
+        </Stack>
+      </StyledComponents.EmptyState>
+    )
+  }
+
+  return (
+    <StyledComponents.ImageGrid>
+      {images.map((image, index) => (
+        <StyledComponents.ImageCard
+          key={`${index.toString()}-${image}`}
+          padding={2}
+          radius={2}
+          shadow={1}
+          onClick={() => handleImageClick(image)}
+        >
+          <StyledComponents.ImageWrapper>
+            <StyledComponents.StyledImage
+              src={`data:image/png;base64,${image}`}
+              alt={`Generated image ${index + 1}`}
+              loading="lazy"
+            />
+          </StyledComponents.ImageWrapper>
+        </StyledComponents.ImageCard>
+      ))}
+    </StyledComponents.ImageGrid>
+  )
+})
+
+export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
+  // State
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [images, setImages] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [options, setOptions] = useState<ImageGenerationOptions>({
-    aspectRatio: '1:1',
-    numberOfImages: 1,
-    negativePrompt: '',
-    enhancePrompt: true,
-  })
+  const [options, setOptions] = useState<ImageGenerationOptions>(DEFAULT_OPTIONS)
 
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // Handlers
+  const handleInputChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     setQuery(e.currentTarget.value)
     setError(null)
-  }
+  }, [])
 
-  const handleOptionChange = <K extends keyof ImageGenerationOptions>(
-    key: K,
-    value: ImageGenerationOptions[K],
-  ) => {
-    setOptions((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
-  }
+  const handleOptionChange = useCallback(
+    <K extends keyof ImageGenerationOptions>(key: K, value: ImageGenerationOptions[K]) => {
+      setOptions((prev) => ({
+        ...prev,
+        [key]: value,
+      }))
+    },
+    [],
+  )
 
-  const handleGenerate = async () => {
+  const generateImage = useCallback(async () => {
     if (!query.trim()) {
       setError('Please enter a prompt')
       return
@@ -165,7 +298,7 @@ export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
     setError(null)
 
     try {
-      const response = await fetch('http://localhost:3000/api/ai-image', {
+      const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +324,92 @@ export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [query, options])
+
+  // Render helpers
+  const renderGenerationOptions = () => (
+    <StyledComponents.OptionsContainer space={4}>
+      <Text weight="semibold" size={1}>
+        Generation Options
+      </Text>
+
+      <StyledComponents.OptionGrid>
+        <Stack space={3}>
+          <Label size={1}>Aspect Ratio</Label>
+          <Select
+            value={options.aspectRatio}
+            onChange={(e) =>
+              handleOptionChange(
+                'aspectRatio',
+                e.currentTarget.value as ImageGenerationOptions['aspectRatio'],
+              )
+            }
+            disabled={isLoading}
+          >
+            {ASPECT_RATIOS.map((ratio) => (
+              <option key={ratio.value} value={ratio.value}>
+                {ratio.label}
+              </option>
+            ))}
+          </Select>
+        </Stack>
+
+        <Stack space={3}>
+          <Label size={1}>Number of Images</Label>
+          <Select
+            value={options.numberOfImages}
+            onChange={(e) =>
+              handleOptionChange(
+                'numberOfImages',
+                Number(e.currentTarget.value) as ImageGenerationOptions['numberOfImages'],
+              )
+            }
+            disabled={isLoading}
+          >
+            {IMAGE_COUNT_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </Select>
+        </Stack>
+
+        <Stack space={3}>
+          <Label size={1}>Negative Prompt</Label>
+          <TextInput
+            value={options.negativePrompt}
+            onChange={(e) => handleOptionChange('negativePrompt', e.currentTarget.value)}
+            placeholder="Elements to avoid in the image"
+            disabled={isLoading}
+          />
+        </Stack>
+
+        <Stack space={3}>
+          <div style={{padding: '0.5rem 0'}} />
+          <StyledComponents.OptionWrapper>
+            <Switch
+              checked={options.enhancePrompt}
+              onChange={(e) => handleOptionChange('enhancePrompt', e.currentTarget.checked)}
+              disabled={isLoading}
+            />
+            <Label size={1}>Enhance prompt quality</Label>
+          </StyledComponents.OptionWrapper>
+        </Stack>
+      </StyledComponents.OptionGrid>
+    </StyledComponents.OptionsContainer>
+  )
+
+  const renderContent = useCallback(() => {
+    return (
+      <StyledComponents.ContentContainer>
+        {isLoading ? (
+          <LoadingStateContent />
+        ) : (
+          <ImageGridContent images={images} onSelect={onSelect} />
+        )}
+      </StyledComponents.ContentContainer>
+    )
+  }, [isLoading, images, onSelect])
 
   return (
     <ThemeProvider>
@@ -204,10 +422,10 @@ export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
         width={4}
         padding={4}
       >
-        <Stack space={2} paddingX={4} paddingBottom={4}>
-          <SearchInputContainer>
-            <InputWrapper>
-              <SearchInput
+        <Stack space={4} paddingX={4} paddingBottom={4}>
+          <StyledComponents.SearchInputContainer>
+            <StyledComponents.InputWrapper>
+              <StyledComponents.SearchInput
                 label="Prompt"
                 placeholder="Enter a prompt to generate an image"
                 icon={SearchIcon}
@@ -216,92 +434,24 @@ export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
                 onChange={handleInputChange}
                 disabled={isLoading}
               />
-            </InputWrapper>
-            <ButtonWrapper>
+            </StyledComponents.InputWrapper>
+            <StyledComponents.ButtonWrapper>
               <Button
                 textAlign="center"
-                onClick={handleGenerate}
+                onClick={generateImage}
                 style={{width: '100%'}}
                 disabled={isLoading}
                 tone={error ? 'critical' : 'default'}
               >
-                <GenerateButtonContent>
+                <StyledComponents.GenerateButtonContent>
                   {isLoading ? <Spinner /> : <ArrowRightIcon />}
                   <Text size={2}>{isLoading ? 'Generating...' : 'Generate'}</Text>
-                </GenerateButtonContent>
+                </StyledComponents.GenerateButtonContent>
               </Button>
-            </ButtonWrapper>
-          </SearchInputContainer>
+            </StyledComponents.ButtonWrapper>
+          </StyledComponents.SearchInputContainer>
 
-          <OptionsContainer space={4}>
-            <Text weight="semibold" size={1}>
-              Generation Options
-            </Text>
-
-            <OptionGrid>
-              <Stack space={3}>
-                <Label size={1}>Aspect Ratio</Label>
-                <Select
-                  value={options.aspectRatio}
-                  onChange={(e) =>
-                    handleOptionChange(
-                      'aspectRatio',
-                      e.currentTarget.value as ImageGenerationOptions['aspectRatio'],
-                    )
-                  }
-                  disabled={isLoading}
-                >
-                  {ASPECT_RATIOS.map((ratio) => (
-                    <option key={ratio.value} value={ratio.value}>
-                      {ratio.label}
-                    </option>
-                  ))}
-                </Select>
-              </Stack>
-
-              <Stack space={3}>
-                <Label size={1}>Number of Images</Label>
-                <Select
-                  value={options.numberOfImages}
-                  onChange={(e) =>
-                    handleOptionChange(
-                      'numberOfImages',
-                      Number(e.currentTarget.value) as ImageGenerationOptions['numberOfImages'],
-                    )
-                  }
-                  disabled={isLoading}
-                >
-                  {IMAGE_COUNT_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </Select>
-              </Stack>
-
-              <Stack space={3}>
-                <Label size={1}>Negative Prompt</Label>
-                <TextInput
-                  value={options.negativePrompt}
-                  onChange={(e) => handleOptionChange('negativePrompt', e.currentTarget.value)}
-                  placeholder="Elements to avoid in the image"
-                  disabled={isLoading}
-                />
-              </Stack>
-
-              <Stack space={3}>
-                <div style={{padding: '0.5rem 0'}} />
-                <OptionWrapper>
-                  <Switch
-                    checked={options.enhancePrompt}
-                    onChange={(e) => handleOptionChange('enhancePrompt', e.currentTarget.checked)}
-                    disabled={isLoading}
-                  />
-                  <Label size={1}>Enhance prompt quality</Label>
-                </OptionWrapper>
-              </Stack>
-            </OptionGrid>
-          </OptionsContainer>
+          {renderGenerationOptions()}
 
           {error && (
             <Text size={1} style={{color: 'red'}}>
@@ -309,31 +459,7 @@ export function ImageAssetSource({onClose}: ImageAssetSourceProps) {
             </Text>
           )}
 
-          {isLoading ? (
-            <LoadingContainer>
-              <Stack space={3} align="center">
-                <Spinner />
-                <Text size={1} muted>
-                  Generating your images...
-                </Text>
-              </Stack>
-            </LoadingContainer>
-          ) : images.length > 0 ? (
-            <ImageContainer>
-              {images.map((image, index) => (
-                <Card key={`${index.toString()}-${image}`} padding={2}>
-                  <StyledImage
-                    src={`data:image/png;base64,${image}`}
-                    alt={`Generated image ${index + 1}`}
-                  />
-                </Card>
-              ))}
-            </ImageContainer>
-          ) : (
-            <Text size={1} muted>
-              No images generated yet
-            </Text>
-          )}
+          {renderContent()}
         </Stack>
       </Dialog>
     </ThemeProvider>

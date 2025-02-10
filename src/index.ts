@@ -1,37 +1,36 @@
 import {definePlugin} from 'sanity'
 
-import {ImageAssetSource} from './components/image-asset-source'
-import {SparklesIcon} from '@sanity/icons'
+import {getAIImagePlugin} from './plugin'
 
 /**
  * Usage in `sanity.config.ts` (or .js)
  *
  * ```ts
  * import {defineConfig} from 'sanity'
- * import {myPlugin} from 'sanity-plugin-ai-image'
+ * import {imageGen} from 'sanity-plugin-ai-image'
  *
  * export default defineConfig({
  *   // ...
- *   plugins: [myPlugin()],
+ *   plugins: [imageGen({
+ *     apiEndpoint: 'https://your-api-endpoint.com/generate'
+ *   })],
  * })
  * ```
  */
-export const aiImagePlugin = definePlugin(() => {
-  console.log('aiImagePlugin')
+
+type ImageGenConfig = {
+  apiEndpoint: string
+}
+
+export const imageGen = definePlugin<ImageGenConfig>(({apiEndpoint}) => {
+  if (!apiEndpoint) throw new Error('apiEndpoint is required')
   return {
-    name: 'sanity-plugin-ai-image',
+    name: 'sanity-plugin-image-gen',
     form: {
       image: {
         assetSources: (prev) => {
-          return [
-            ...prev,
-            {
-              name: 'sanity-ai-image',
-              title: 'Generate Image',
-              icon: SparklesIcon,
-              component: ImageAssetSource,
-            },
-          ]
+          const plugin = getAIImagePlugin(apiEndpoint)
+          return [...prev, plugin]
         },
       },
     },

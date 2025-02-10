@@ -1,18 +1,18 @@
 {
-  "name": "sanity-plugin-ai-image",
+  "name": "sanity-plugin-image-gen",
   "version": "1.0.0",
   "description": "generate ai image for sanity",
   "keywords": [
     "sanity",
     "sanity-plugin"
   ],
-  "homepage": "https://github.com/robotostudio/sanity-plugin-ai-image#readme",
+  "homepage": "https://github.com/robotostudio/sanity-plugin-image-gen#readme",
   "bugs": {
-    "url": "https://github.com/robotostudio/sanity-plugin-ai-image/issues"
+    "url": "https://github.com/robotostudio/sanity-plugin-image-gen/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/robotostudio/sanity-plugin-ai-image.git"
+    "url": "git+ssh://git@github.com/robotostudio/sanity-plugin-image-gen.git"
   },
   "license": "MIT",
   "author": "Hrithik Prasad <hrithik@roboto.studio>",

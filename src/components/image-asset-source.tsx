@@ -11,7 +11,6 @@ import {
   Select,
   Spinner,
   Stack,
-  Switch,
   Text,
   TextInput,
   ThemeProvider,
@@ -29,10 +28,10 @@ const ASPECT_RATIOS = [
 ] as const
 
 const IMAGE_COUNT_OPTIONS = [
-  {value: 1, label: '1 Image'},
-  {value: 2, label: '2 Images'},
-  {value: 3, label: '3 Images'},
-  {value: 4, label: '4 Images'},
+  {value: 1, label: '1'},
+  {value: 2, label: '2'},
+  {value: 3, label: '3'},
+  {value: 4, label: '4'},
 ] as const
 
 // Add size options constant after ASPECT_RATIOS
@@ -48,7 +47,7 @@ interface ImageGenerationOptions {
   numberOfImages: 1 | 2 | 3 | 4
   negativePrompt: string
   enhancePrompt: boolean
-  size: '512x512' | '768x768' | '1024x1024' | '1536x1536'
+  size: 'small' | 'medium' | 'large' | 'extra-large'
 }
 
 const DEFAULT_OPTIONS: ImageGenerationOptions = {
@@ -56,10 +55,8 @@ const DEFAULT_OPTIONS: ImageGenerationOptions = {
   numberOfImages: 1,
   negativePrompt: '',
   enhancePrompt: true,
-  size: '512x512',
+  size: 'medium',
 }
-
-const API_ENDPOINT = 'http://localhost:3000/api/ai-image'
 
 // Types
 
@@ -76,6 +73,7 @@ interface GenerateImageResponse {
 interface ImageAssetSourceProps {
   onClose: () => void
   onSelect?: (image: AssetFromSource[]) => void
+  route: string
 }
 
 // Styled Components
@@ -141,11 +139,15 @@ const StyledComponents = {
   `,
 
   ImageContainer: styled.div`
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    width: 100%;
-    padding: 1rem 0;
+    border: 2px solid transparent;
+    transition: border-color 0.2s ease-in-out;
+    cursor: pointer;
+    border-radius: 4px;
+    overflow: hidden;
+
+    &:hover {
+      border-color: var(--card-focus-ring-color);
+    }
   `,
   DialogContent: styled(Stack)`
     overflow: hidden;
@@ -166,7 +168,7 @@ const StyledComponents = {
 
   EmptyState: styled(Flex)`
     flex: 1;
-    min-height: 300px;
+    min-height: 400px;
     width: 100%;
     align-items: center;
     justify-content: center;
@@ -177,7 +179,7 @@ const StyledComponents = {
 
   LoadingState: styled(Flex)`
     flex: 1;
-    min-height: 300px;
+    min-height: 400px;
     width: 100%;
     align-items: center;
     justify-content: center;
@@ -365,13 +367,8 @@ const ImageGridContent = memo(function ImageGridContent({
   }
 
   return (
-    <StyledComponents.GridWrapper>
-      <Grid
-        columns={[1, 2]}
-        gap={[1, 1, 2, 3]}
-        padding={4}
-        style={{maxHeight: '40dvh', overflow: 'auto'}}
-      >
+    <StyledComponents.GridWrapper style={{minHeight: '400px'}}>
+      <Grid columns={[1, 2]} gap={[1, 1, 2, 3]} padding={4}>
         {images.map((image, index) => (
           <div
             key={`${index.toString()}-${image}`}
@@ -414,7 +411,11 @@ const GenerationOptionsAccordion = memo(function GenerationOptionsAccordion({
 
   return (
     <Stack space={4}>
-      <StyledComponents.CollapsibleHeader onClick={() => setIsOpen(!isOpen)} mode="ghost">
+      <StyledComponents.CollapsibleHeader
+        onClick={() => setIsOpen(!isOpen)}
+        mode="ghost"
+        style={{borderTop: 'none'}}
+      >
         <StyledComponents.HeaderContent>
           <Text weight="semibold" size={1}>
             Advanced Options
@@ -491,22 +492,13 @@ const GenerationOptionsAccordion = memo(function GenerationOptionsAccordion({
               disabled={isLoading}
             />
           </Stack>
-
-          <StyledComponents.OptionWrapper>
-            <Switch
-              checked={options.enhancePrompt}
-              onChange={(e) => onOptionChange('enhancePrompt', e.currentTarget.checked)}
-              disabled={isLoading}
-            />
-            <Label size={1}>Enhance prompt quality</Label>
-          </StyledComponents.OptionWrapper>
         </StyledComponents.OptionGrid>
       </StyledComponents.CollapsibleContent>
     </Stack>
   )
 })
 
-export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
+export function ImageAssetSource({onClose, onSelect, route}: ImageAssetSourceProps) {
   // State
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -540,15 +532,13 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
     setError(null)
 
     try {
-      const response = await fetch(API_ENDPOINT, {
+      const response = await fetch(route, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: options.enhancePrompt
-            ? `${query}, high quality, detailed, professional photography`
-            : query,
+          prompt: query,
           aspectRatio: options.aspectRatio,
           numberOfImages: options.numberOfImages,
           size: options.size,
@@ -569,7 +559,7 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
     } finally {
       setIsLoading(false)
     }
-  }, [query, options])
+  }, [query, options, route])
 
   // Replace renderGenerationOptions with this
   const renderGenerationOptions = useCallback(() => {
@@ -611,7 +601,8 @@ export function ImageAssetSource({onClose, onSelect}: ImageAssetSourceProps) {
                 label="Prompt"
                 placeholder="Enter a prompt to generate an image"
                 icon={SearchIcon}
-                clearButton
+                clearButton={query !== ''}
+                onClear={() => setQuery('')}
                 value={query}
                 onChange={handleInputChange}
                 disabled={isLoading}

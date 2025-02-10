@@ -37,10 +37,10 @@ const IMAGE_COUNT_OPTIONS = [
 
 // Add size options constant after ASPECT_RATIOS
 const SIZE_OPTIONS = [
-  {value: '512x512', label: 'Small (512x512)'},
-  {value: '768x768', label: 'Medium (768x768)'},
-  {value: '1024x1024', label: 'Large (1024x1024)'},
-  {value: '1536x1536', label: 'Extra Large (1536x1536)'},
+  {value: 'small', label: 'Small'},
+  {value: 'medium', label: 'Medium'},
+  {value: 'large', label: 'Large'},
+  {value: 'extra-large', label: 'Extra Large'},
 ] as const
 
 interface ImageGenerationOptions {

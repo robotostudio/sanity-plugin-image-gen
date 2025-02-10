@@ -1,3 +1,10 @@
+# [1.1.0](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.0.0...v1.1.0) (2025-02-10)
+
+
+### Features
+
+* Create version commit for triggering release ([7e2180e](https://github.com/robotostudio/sanity-plugin-image-gen/commit/7e2180eb7cc7b4d555ea559b580454840cb399de))
+
 # 1.0.0 (2025-02-10)
 
 

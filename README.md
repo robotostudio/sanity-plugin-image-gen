@@ -19,6 +19,7 @@ An image generation plugin for Sanity Studio v3, that allows AI image creation d
 npm install sanity-plugin-image-gen
 ```
 
+
 ## Configuration
 
 Add the plugin to your Sanity Studio configuration:
@@ -55,12 +56,22 @@ The plugin integrates directly into your existing Sanity Studio image fields:
 4. Configure generation parameters (aspect ratio, size, etc.)
 5. Generate and select your AI-created image
 
+
+
+### API Dependencies
+
+Install the required packages for the API route:
+
+```sh
+npm install @ai-sdk/replicate ai zod
+```
+
 ## API Integration
 
 Create an API route in your Next.js project to handle image generation:
 
 ```ts
-// app/src/api/generate-image/route.ts
+// app/api/generate-image/route.ts
 import { createReplicate } from "@ai-sdk/replicate";
 import { experimental_generateImage as generateImage } from "ai";
 import { NextResponse } from "next/server";
@@ -211,6 +222,41 @@ export async function POST(request: Request) {
   }
 }
 
+```
+### CORS Configuration
+To handle CORS when calling the API from Sanity Studio, you'll need to configure CORS headers in your Next.js application. This can be done by adding CORS headers to your Next.js configuration file.
+
+For development environments, you may want to restrict the allowed origins to your Sanity Studio domain. For production, configure the headers according to your security requirements.
+
+```ts
+// next.config.js or next.config.mjs
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+   async headers() {
+    return [
+      {
+        source: "/api/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, DELETE, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "Content-Type, Authorization",
+          },
+          {
+            key: "Access-Control-Allow-Credentials",
+            value: "true",
+          },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;
 ```
 
 ## Technical Requirements

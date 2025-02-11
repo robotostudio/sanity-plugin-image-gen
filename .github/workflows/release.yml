@@ -51,13 +51,7 @@ jobs:
           git config --global user.name "github-actions[bot]"
           echo "force(${{ github.event.inputs.version_type }})" > .release-commit
           git add .release-commit
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git commit -m "force(${{ github.event.inputs.version_type }}): force ${{ github.event.inputs.version_type }} version release"
-          fi
-        continue-on-error: true
-
+          git commit -m "force(${{ github.event.inputs.version_type }}): force ${{ github.event.inputs.version_type }} version release"
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
         with:

@@ -12,9 +12,9 @@
       {
         "preset": "conventionalcommits",
         "releaseRules": [
-          {"type": "force", "scope": "major", "release": "major"},
-          {"type": "force", "scope": "minor", "release": "minor"},
-          {"type": "force", "scope": "patch", "release": "patch"},
+          {"type": "force", "release": "major", "subject": "*major*"},
+          {"type": "force", "release": "minor", "subject": "*minor*"},
+          {"type": "force", "release": "patch", "subject": "*patch*"},
           {"type": "feat", "release": "minor"},
           {"type": "fix", "release": "patch"}
         ],

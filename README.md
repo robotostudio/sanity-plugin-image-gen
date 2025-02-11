@@ -1,14 +1,14 @@
 # Sanity Plugin Image Gen
 
-A professional-grade image generation plugin for Sanity Studio v3, enabling seamless AI-powered image creation directly within your content workflow. Built with TypeScript and integrated with modern AI image generation models.
+An image generation plugin for Sanity Studio v3, that allows AI image creation directly within Sanity Studio. Built with TypeScript, allows for granular control of generation using custom API routes inside of your application.
 
 ## Features
 
 - Enterprise-ready image generation within Sanity Studio
 - Precise aspect ratio control (1:1, 16:9, 4:3, 3:2)
 - Dynamic image size optimization
+- Multi-image generation capability (up to 4 images)
 - Advanced prompt engineering with negative prompt support
-- Multi-image generation capability
 - Fully typed TypeScript implementation
 - Seamless integration with Sanity's asset pipeline
 - Modern React architecture with functional components
@@ -47,7 +47,7 @@ REPLICATE_API_TOKEN=your_replicate_api_token
 
 ## Usage
 
-The plugin seamlessly integrates into your existing Sanity Studio image fields:
+The plugin integrates directly into your existing Sanity Studio image fields:
 
 1. Access any image field in your studio
 2. Select the "AI Generate" option from the asset source menu

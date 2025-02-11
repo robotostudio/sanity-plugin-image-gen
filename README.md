@@ -60,7 +60,7 @@ The plugin integrates directly into your existing Sanity Studio image fields:
 Create an API route in your Next.js project to handle image generation:
 
 ```ts
-// app/api/generate-image/route.ts
+// app/src/api/generate-image/route.ts
 import { createReplicate } from "@ai-sdk/replicate";
 import { experimental_generateImage as generateImage } from "ai";
 import { NextResponse } from "next/server";

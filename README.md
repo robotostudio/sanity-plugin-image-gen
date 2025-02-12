@@ -32,18 +32,10 @@ export default defineConfig({
   // ...
   plugins: [
     imageGen({
-      apiEndpoint: '/api/generate-image',
+      apiEndpoint: 'https://your-nextjs-app.com/api/generate-image',
     })
   ],
 })
-```
-
-### Environment Variables
-
-Configure your AI provider credentials:
-
-```env
-REPLICATE_API_TOKEN=your_replicate_api_token
 ```
 
 ## Usage
@@ -66,12 +58,21 @@ Install the required packages for the API route:
 npm install @ai-sdk/replicate ai zod
 ```
 
+### Environment Variables
+
+Configure your AI provider credentials:
+
+```env
+REPLICATE_API_TOKEN=your_replicate_api_token
+```
+
+
 ## API Integration
 
 Create an API route in your Next.js project to handle image generation:
 
 ```ts
-// app/api/generate-image/route.ts
+// app/src/api/generate-image/route.ts
 import { createReplicate } from "@ai-sdk/replicate";
 import { experimental_generateImage as generateImage } from "ai";
 import { NextResponse } from "next/server";

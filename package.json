@@ -1,6 +1,6 @@
 {
   "name": "sanity-plugin-image-gen",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "generate ai image for sanity",
   "keywords": [
     "sanity",

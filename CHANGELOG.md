@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.2.2...v1.2.3) (2025-02-12)
+
+
+### Bug Fixes
+
+* Update API endpoint in README.md ([189d672](https://github.com/robotostudio/sanity-plugin-image-gen/commit/189d67212ea2d368453b6a3cd5c1d1ae97c12c59))
+
 ## [1.2.2](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.2.1...v1.2.2) (2025-02-11)
 
 ## [1.2.1](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.2.0...v1.2.1) (2025-02-11)

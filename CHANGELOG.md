@@ -1,3 +1,10 @@
+## [1.2.4](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.2.3...v1.2.4) (2025-02-19)
+
+
+### Bug Fixes
+
+* image card aspect ratio, use URL constructor on apiUrl ([8e516f6](https://github.com/robotostudio/sanity-plugin-image-gen/commit/8e516f6242c30f89fbe8d8645fa25626ed2f3df4))
+
 ## [1.2.3](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.2.2...v1.2.3) (2025-02-12)
 
 

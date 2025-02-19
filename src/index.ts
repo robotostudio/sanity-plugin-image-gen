@@ -19,7 +19,7 @@ import {getAIImagePlugin} from './plugin'
  */
 
 type ImageGenConfig = {
-  apiEndpoint: string
+  apiEndpoint: string | URL
 }
 
 export const imageGen = definePlugin<ImageGenConfig>(({apiEndpoint}) => {
@@ -29,7 +29,9 @@ export const imageGen = definePlugin<ImageGenConfig>(({apiEndpoint}) => {
     form: {
       image: {
         assetSources: (prev) => {
-          const plugin = getAIImagePlugin(apiEndpoint)
+          const endpoint = apiEndpoint.toString()
+          console.log(`Using ${endpoint} to create image from`)
+          const plugin = getAIImagePlugin(endpoint)
           return [...prev, plugin]
         },
       },

@@ -15,58 +15,9 @@ import {
 import {type ChangeEvent, memo, useCallback, useState} from 'react'
 import type {AssetFromSource} from 'sanity'
 
+import {ASPECT_RATIOS, DEFAULT_OPTIONS, IMAGE_COUNT_OPTIONS, SIZE_OPTIONS} from '../constant'
+import type {GenerateImageResponse, ImageGenerationOptions} from '../types'
 import {StyledComponents} from './image-asset-source-styles'
-
-// Constants
-const ASPECT_RATIOS = [
-  {value: '1:1', label: 'Square (1:1)'},
-  {value: '16:9', label: 'Landscape (16:9)'},
-  {value: '4:3', label: 'Standard (4:3)'},
-  {value: '3:2', label: 'Classic (3:2)'},
-] as const
-
-const IMAGE_COUNT_OPTIONS = [
-  {value: 1, label: '1'},
-  {value: 2, label: '2'},
-  {value: 3, label: '3'},
-  {value: 4, label: '4'},
-] as const
-
-// Add size options constant after ASPECT_RATIOS
-const SIZE_OPTIONS = [
-  {value: 'small', label: 'Small'},
-  {value: 'medium', label: 'Medium'},
-  {value: 'large', label: 'Large'},
-  {value: 'extra-large', label: 'Extra Large'},
-] as const
-
-interface ImageGenerationOptions {
-  aspectRatio: '1:1' | '16:9' | '4:3' | '3:2'
-  numberOfImages: 1 | 2 | 3 | 4
-  negativePrompt: string
-  enhancePrompt: boolean
-  size: 'small' | 'medium' | 'large' | 'extra-large'
-}
-
-const DEFAULT_OPTIONS: ImageGenerationOptions = {
-  aspectRatio: '1:1',
-  numberOfImages: 1,
-  negativePrompt: '',
-  enhancePrompt: true,
-  size: 'medium',
-}
-
-// Types
-
-interface GenerateImageResponse {
-  images: string[]
-  metadata: {
-    prompt: string
-    aspectRatio: string
-    model: string
-    generatedAt: string
-  }
-}
 
 interface ImageAssetSourceProps {
   onClose: () => void
@@ -151,7 +102,10 @@ const ImageGridContent = memo(function ImageGridContent({
               src={`data:image/png;base64,${image}`}
               alt={`${prompt} index ${index.toString() + 1}`}
               loading="lazy"
-              style={{width: '100%', height: '100%', display: 'block'}}
+              style={{
+                width: '100%',
+                display: 'block',
+              }}
             />
           </div>
         ))}
@@ -315,11 +269,14 @@ export function ImageAssetSource({onClose, onSelect, route}: ImageAssetSourcePro
       })
 
       if (!response.ok) {
-        throw new Error('Failed to generate image')
+        throw new Error(response.statusText)
       }
 
       const data: GenerateImageResponse = await response.json()
-      setImages(data.images)
+      if (!data?.images?.length) {
+        throw new Error('No images generated')
+      }
+      setImages(data?.images)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate image')
     } finally {
@@ -360,42 +317,49 @@ export function ImageAssetSource({onClose, onSelect, route}: ImageAssetSourcePro
         open
         width={3}
       >
-        <StyledComponents.DialogContent padding={4}>
-          <StyledComponents.SearchInputContainer>
-            <StyledComponents.InputWrapper>
-              <StyledComponents.SearchInput
-                label="Prompt"
-                placeholder="Enter a prompt to generate an image"
-                icon={SearchIcon}
-                clearButton={query !== ''}
-                onClear={() => setQuery('')}
-                value={query}
-                onChange={handleInputChange}
-                disabled={isLoading}
-              />
-            </StyledComponents.InputWrapper>
-            <StyledComponents.ButtonWrapper>
-              <Button
-                textAlign="center"
-                onClick={generateImage}
-                text={isLoading ? 'Generating...' : 'Generate'}
-                style={{width: '100%'}}
-                disabled={isLoading}
-                tone={error ? 'critical' : 'default'}
-              />
-            </StyledComponents.ButtonWrapper>
-          </StyledComponents.SearchInputContainer>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault()
+            generateImage()
+          }}
+        >
+          <StyledComponents.DialogContent padding={4}>
+            <StyledComponents.SearchInputContainer>
+              <StyledComponents.InputWrapper>
+                <StyledComponents.SearchInput
+                  label="Prompt"
+                  placeholder="Enter a prompt to generate an image"
+                  icon={SearchIcon}
+                  clearButton={query !== ''}
+                  onClear={() => setQuery('')}
+                  value={query}
+                  onChange={handleInputChange}
+                  disabled={isLoading}
+                />
+              </StyledComponents.InputWrapper>
+              <StyledComponents.ButtonWrapper>
+                <Button
+                  type="submit"
+                  textAlign="center"
+                  text={isLoading ? 'Generating...' : 'Generate'}
+                  style={{width: '100%'}}
+                  disabled={isLoading}
+                  tone={error ? 'critical' : 'default'}
+                />
+              </StyledComponents.ButtonWrapper>
+            </StyledComponents.SearchInputContainer>
 
-          {renderGenerationOptions()}
+            {renderGenerationOptions()}
 
-          {error && (
-            <Text size={1} style={{color: 'red'}}>
-              {error}
-            </Text>
-          )}
+            {error && (
+              <Text size={1} style={{color: 'red'}}>
+                {error}
+              </Text>
+            )}
 
-          {renderContent()}
-        </StyledComponents.DialogContent>
+            {renderContent()}
+          </StyledComponents.DialogContent>
+        </form>
       </Dialog>
     </ThemeProvider>
   )

@@ -88,6 +88,15 @@ type ImageSize = "small" | "medium" | "large" | "extra-large";
 type AllowedModel = (typeof ALLOWED_MODELS)[number];
 type ImageDimension = `${number}x${number}`;
 
+// CORS Headers Configuration
+const corsHeaders = {
+  // you can change the origin to your own domain
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Max-Age": "86400",
+};
+
 interface ImageGenerationRequest {
   prompt: string;
   aspectRatio: AspectRatio;
@@ -201,7 +210,12 @@ function handleError(error: unknown) {
   }
 
   console.error("[ImageGeneration] Unknown error:", error);
-  return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  return NextResponse.json({ error: "Internal Server Error" }, { status: 500, headers: corsHeaders });
+}
+
+// Handle OPTIONS request for CORS preflight
+export async function OPTIONS() {
+  return NextResponse.json({}, { headers: corsHeaders });
 }
 
 // Route Handler
@@ -217,47 +231,12 @@ export async function POST(request: Request) {
 
     const response = await generateImages(validatedData, apiToken);
 
-    return NextResponse.json(response);
+    return NextResponse.json(response, { headers: corsHeaders });
   } catch (error) {
     return handleError(error);
   }
 }
 
-```
-### CORS Configuration
-To handle CORS when calling the API from Sanity Studio, you'll need to configure CORS headers in your Next.js application. This can be done by adding CORS headers to your Next.js configuration file.
-
-For development environments, you may want to restrict the allowed origins to your Sanity Studio domain. For production, configure the headers according to your security requirements.
-
-```ts
-// next.config.js or next.config.mjs
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-   async headers() {
-    return [
-      {
-        source: "/api/:path*",
-        headers: [
-          { key: "Access-Control-Allow-Origin", value: "*" },
-          {
-            key: "Access-Control-Allow-Methods",
-            value: "GET, POST, PUT, DELETE, OPTIONS",
-          },
-          {
-            key: "Access-Control-Allow-Headers",
-            value: "Content-Type, Authorization",
-          },
-          {
-            key: "Access-Control-Allow-Credentials",
-            value: "true",
-          },
-        ],
-      },
-    ];
-  },
-};
-
-export default nextConfig;
 ```
 
 ## Technical Requirements

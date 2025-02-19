@@ -110,7 +110,6 @@ interface ImageGenerationResponse {
   images: string[];
   metadata: {
     prompt: string;
-    dimension: ImageDimension;
     aspectRatio: AspectRatio;
     model: AllowedModel;
     generatedAt: string;
@@ -181,7 +180,6 @@ async function generateImages(
     images: images.map((img) => img.base64),
     metadata: {
       prompt: params.prompt,
-      dimension,
       aspectRatio: params.aspectRatio,
       model: params.model,
       generatedAt: new Date().toISOString(),

@@ -1,6 +1,7 @@
 import {definePlugin} from 'sanity'
 
 import {getAIImagePlugin} from './plugin'
+import type {GenerateImageResponse} from './types'
 
 /**
  * Usage in `sanity.config.ts` (or .js)
@@ -18,9 +19,11 @@ import {getAIImagePlugin} from './plugin'
  * ```
  */
 
-type ImageGenConfig = {
+export type ImageGenConfig = {
   apiEndpoint: string | URL
 }
+
+export type ImageGenImageResponse = GenerateImageResponse
 
 export const imageGen = definePlugin<ImageGenConfig>(({apiEndpoint}) => {
   if (!apiEndpoint) throw new Error('apiEndpoint is required')

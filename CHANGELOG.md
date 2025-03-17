@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.2.5...v1.3.0) (2025-03-17)
+
+
+### Features
+
+* Add Dependabot configuration file ([deb3cdd](https://github.com/robotostudio/sanity-plugin-image-gen/commit/deb3cdd3ef456ed8fc199fd1d58e154665ab9308))
+
 ## [1.2.5](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.2.4...v1.2.5) (2025-02-19)
 
 ## [1.2.4](https://github.com/robotostudio/sanity-plugin-image-gen/compare/v1.2.3...v1.2.4) (2025-02-19)

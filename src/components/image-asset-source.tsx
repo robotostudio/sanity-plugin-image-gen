@@ -58,7 +58,7 @@ const ImageGridContent = memo(function ImageGridContent({
               _type: 'sanity.imageAsset',
               description: prompt,
               creditLine: 'Generated image by Sanity AI Image Plugin',
-              title: prompt,
+              title: prompt.slice(0, 255),
             },
           } as unknown as AssetFromSource,
         ])
